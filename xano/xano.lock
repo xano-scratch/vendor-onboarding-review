@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "objects": {
+    "app:onboarding": {
+      "guid": "0d8d6aed2f9c89a19db53c84c5427d61",
+      "canonical": "onboarding",
+      "canonical_source": "code"
+    },
+    "dbo:approval_events": {
+      "guid": "e5ee4b5e779152e57031ca0e368100ca"
+    },
+    "dbo:required_approvals": {
+      "guid": "7c4726d219a51cb40bfd74e3734c31cb"
+    },
+    "dbo:risk_rules": {
+      "guid": "e07d59f8f12e80628f4111ce79a8e47e"
+    },
+    "dbo:submissions": {
+      "guid": "621e61de4e5b0be6d104c272a1057b90"
+    },
+    "dbo:users": {
+      "guid": "157d4a98d979cf04b9ccdb98dfc15229"
+    },
+    "dbo:vendors": {
+      "guid": "579b69a3a85e27a4a53bed1421c5776a"
+    },
+    "function:score_vendor": {
+      "guid": "a7362d10b233a0b2e6f2e0f5ed7abef0"
+    },
+    "query:onboarding|GET|queue": {
+      "guid": "e8fde341359f6ce2ce55e7994bba5ea2"
+    },
+    "query:onboarding|GET|submissions/{submission_id}": {
+      "guid": "5db19964480cc35713fd4bac7b9a0240"
+    },
+    "query:onboarding|POST|auth/login": {
+      "guid": "2cf678580d543ec6bd021511bab670e3"
+    },
+    "query:onboarding|POST|seed": {
+      "guid": "9a6bf8f0ab24d099d1089fd0aa156d94"
+    },
+    "query:onboarding|POST|submissions": {
+      "guid": "0939c5412251d510bd0fb092f9c6ad87"
+    },
+    "query:onboarding|POST|submissions/{submission_id}/approvals/{approval_id}/approve": {
+      "guid": "4180228222c0ebf064d7d1a13869c91f"
+    },
+    "query:onboarding|POST|submissions/{submission_id}/approvals/{approval_id}/reject": {
+      "guid": "c69f39fea4e0144fe6d1683cd169db24"
+    },
+    "query:onboarding|POST|submissions/{submission_id}/complete": {
+      "guid": "9a7cd3670bd9227a99af76a7b0d5d55b"
+    },
+    "query:onboarding|POST|submissions/{submission_id}/rescore": {
+      "guid": "58fc7c699f4b47f8d7ee380490d4f291"
+    }
+  }
+}

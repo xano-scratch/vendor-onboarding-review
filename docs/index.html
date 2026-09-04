@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vendor Onboarding Review: a governed procurement backend</title>
+    <meta
+      name="description"
+      content="A governed procurement backend that risk-tiers each vendor, derives the approvals its tier requires, and blocks completion at the API layer. Built with Xano and XanoTS."
+    />
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --panel: #141414;
+        --panel-2: #1b1b1b;
+        --border: #2a2a2a;
+        --text: #ededed;
+        --muted: #a1a1a1;
+        --primary: #ededed;
+        --primary-ink: #0a0a0a;
+        --accent: #5eead4;
+        --red: #fca5a5;
+        --amber: #fcd34d;
+        --green: #6ee7b7;
+        --sky: #7dd3fc;
+        --radius: 12px;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: radial-gradient(1200px 600px at 50% -200px, #17211f 0%, var(--bg) 55%);
+        color: var(--text);
+        font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+      a { color: inherit; }
+      .badge {
+        display: inline-flex; align-items: center; gap: 8px;
+        border: 1px solid var(--border); background: var(--panel);
+        color: var(--muted); padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 500;
+      }
+      .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--accent); }
+      header.hero { padding: 72px 0 40px; text-align: center; }
+      h1 { font-size: 44px; line-height: 1.1; letter-spacing: -0.02em; margin: 20px 0 12px; }
+      .tagline { font-size: 19px; color: var(--muted); max-width: 720px; margin: 0 auto; }
+      .meta { margin: 22px 0 0; color: var(--muted); font-size: 14px; }
+      .meta b { color: var(--text); }
+      .hero-actions { display: flex; gap: 12px; justify-content: center; margin-top: 26px; flex-wrap: wrap; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+        padding: 11px 20px; border-radius: 10px; font-weight: 600; font-size: 15px; border: 1px solid transparent;
+        transition: transform .04s ease, background .15s ease, border-color .15s ease;
+      }
+      .btn:active { transform: translateY(1px); }
+      .btn.primary { background: var(--primary); color: var(--primary-ink); }
+      .btn.primary:hover { background: #fff; }
+      .btn.ghost { background: transparent; border-color: var(--border); color: var(--text); }
+      .btn.ghost:hover { border-color: #3d3d3d; background: var(--panel); }
+      .shot { margin: 20px 0 8px; }
+      .shot img {
+        width: 100%; height: auto; display: block; border: 1px solid var(--border);
+        border-radius: var(--radius); box-shadow: 0 24px 60px -30px rgba(0,0,0,.8);
+      }
+      .cap { text-align: center; color: var(--muted); font-size: 13px; margin-top: 10px; }
+      section { padding: 44px 0; border-top: 1px solid var(--border); }
+      section h2 { font-size: 24px; letter-spacing: -0.01em; margin: 0 0 6px; }
+      section .lead { color: var(--muted); margin: 0 0 22px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 34px; } }
+      .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+      .card h3 { margin: 0 0 6px; font-size: 16px; }
+      .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+      .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); }
+      .pill.red { color: var(--red); border-color: #7f1d1d; background: #7f1d1d22; }
+      .pill.amber { color: var(--amber); border-color: #78350f; background: #78350f22; }
+      .pill.green { color: var(--green); border-color: #064e3b; background: #064e3b22; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+      th { color: var(--muted); font-weight: 600; }
+      td code { color: var(--sky); font-size: 13px; }
+      .who { color: var(--muted); white-space: nowrap; }
+      pre {
+        background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+        padding: 16px; overflow-x: auto; font-size: 13.5px; color: #dcdcdc; margin: 0;
+      }
+      .note { color: var(--muted); font-size: 14px; }
+      footer { padding: 40px 0 64px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13.5px; text-align: center; }
+      .k { color: var(--text); font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <span class="badge"><span class="dot"></span> Play 3 · Pilot to Production · Procurement</span>
+        <h1>Vendor Onboarding Review</h1>
+        <p class="tagline">
+          A governed procurement backend that risk-tiers each vendor from one versioned rule set, derives the
+          approvals that tier requires, and blocks completion at the API layer until every required approval is in.
+        </p>
+        <p class="meta"><b>6</b> tables · <b>9</b> APIs · <b>1</b> function · Xano + XanoTS + React</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="https://github.com/xano-scratch/vendor-onboarding-review">View on GitHub</a>
+          <a class="btn ghost" href="#use">Use this template</a>
+        </div>
+      </header>
+
+      <div class="shot">
+        <img src="screenshot.png" alt="The governed case view: a high-risk vendor, the approval checklist its tier generated, and the audit trail" />
+        <p class="cap">The case view: a high-risk determination, the derived approval checklist, and the append-only audit trail.</p>
+      </div>
+
+      <section>
+        <h2>What it demonstrates</h2>
+        <p class="lead">
+          The governed backend under a plausible AI-generated internal tool. Speed is not the point. Control is: the
+          rules a screen depends on live in one readable API layer a technical reviewer can point at and trust.
+        </p>
+        <div class="grid">
+          <div class="card">
+            <h3>One versioned rule set decides the tier</h3>
+            <p>Data access, spend band, category, and country each add points from the active rule version. Every submission records which version decided it.</p>
+          </div>
+          <div class="card">
+            <h3>The tier derives the approvals</h3>
+            <p><span class="pill green">low</span> one approver, <span class="pill amber">medium</span> two, <span class="pill red">high</span> two approvers plus an admin. Generated, not hand-managed.</p>
+          </div>
+          <div class="card">
+            <h3>Completion is gated at the API layer</h3>
+            <p>A case cannot complete until every required approval is granted. An early attempt is refused and writes a block event, so it stays on the record.</p>
+          </div>
+          <div class="card">
+            <h3>Auth is API-layer RBAC</h3>
+            <p>An auth table backs minted tokens. Each endpoint reads the caller's live role and gates the action. No row-level security; access is enforced in the API.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>API surface</h2>
+        <p class="lead">Nine endpoints under the pinned <code>onboarding</code> group. Read endpoints return normalized data; the write endpoints carry the governed logic.</p>
+        <table>
+          <thead><tr><th>Endpoint</th><th>Who</th><th>What it enforces</th></tr></thead>
+          <tbody>
+            <tr><td><code>POST /submissions</code></td><td class="who">Requester+</td><td>Score the vendor and derive its approval set.</td></tr>
+            <tr><td><code>POST /submissions/{id}/complete</code></td><td class="who">Admin</td><td>Refuse (and log a block) until every approval is granted.</td></tr>
+            <tr><td><code>POST /…/approvals/{id}/approve</code></td><td class="who">Role-matched</td><td>Grant one step; the caller's role must match it.</td></tr>
+            <tr><td><code>POST /…/approvals/{id}/reject</code></td><td class="who">Role-matched</td><td>Reject a step with a reason and block the case.</td></tr>
+            <tr><td><code>POST /submissions/{id}/rescore</code></td><td class="who">Admin</td><td>Re-evaluate against the active rules; redraw pending steps.</td></tr>
+            <tr><td><code>GET /queue</code></td><td class="who">Approver+</td><td>The review queue with each case's outstanding count.</td></tr>
+            <tr><td><code>GET /submissions/{id}</code></td><td class="who">Approver+</td><td>A case, its checklist, and the full audit trail.</td></tr>
+            <tr><td><code>POST /auth/login</code></td><td class="who">Public</td><td>Mint an auth token for a seeded user.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Four screens</h2>
+        <p class="lead">A React and Vite frontend that derives its paths and types straight from the backend defs.</p>
+        <div class="grid">
+          <div class="card"><h3>Sign in and role switch</h3><p>Pick a seeded requester, approver, or admin to see the same rules enforced differently.</p></div>
+          <div class="card"><h3>Submit a vendor</h3><p>The intake form. On submit it shows the computed tier, the deciding rule version, and the generated checklist.</p></div>
+          <div class="card"><h3>Review queue</h3><p>Filter by status and tier, with the outstanding-approval count per case.</p></div>
+          <div class="card"><h3>Case detail</h3><p>The determination, per-step approve and reject gated by role, the completion gate, and the audit trail.</p></div>
+        </div>
+      </section>
+
+      <section id="use">
+        <h2>Use this template</h2>
+        <p class="lead">Paste this to an AI coding agent, or run the commands yourself. You need a Xano account for the one-time login.</p>
+        <pre>Clone https://github.com/xano-scratch/vendor-onboarding-review and get it running for me.
+Run: npm install, then npx xanots login, then npm run xano:deploy.
+It deploys the Xano backend and the React frontend to a live environment and seeds demo data.
+Then show me the live URL and the demo sign-in accounts.</pre>
+        <p class="note" style="margin-top:14px">
+          The deploy ships seed data, so the queue and a case are browsable right away. Every demo account uses the
+          password <span class="k">Passw0rd!23</span>.
+        </p>
+      </section>
+
+      <section>
+        <h2>About the live links</h2>
+        <p class="note">
+          Any live preview attached to this project points at a short-lived Xano environment for review, so it may
+          have expired. The durable artifact is the repo. Clone it and run <span class="k">npm run xano:deploy</span>
+          for fresh links. This is a proof artifact, not a production system; it runs entirely on seed data with no
+          external credentials.
+        </p>
+      </section>
+    </div>
+
+    <footer>
+      Built with <span class="k">Xano</span> and <span class="k">XanoTS</span>. MIT licensed.
+    </footer>
+  </body>
+</html>

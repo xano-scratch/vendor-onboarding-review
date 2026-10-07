@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vendor Onboarding Review: a governed procurement backend</title>
+<meta name="description" content="A governed procurement backend that risk-tiers each vendor from one versioned rule set, derives the approvals that tier needs, and blocks completion at the API layer until every required approval is granted by the right role." />
+<style>
+  :root {
+    --bg: #ffffff; --fg: #18181b; --muted: #6b6b76; --card: #fafafa; --border: #e6e6ea;
+    --primary: #4f46e5; --primary-fg: #ffffff; --code-bg: #f4f4f6; --accent-soft: #eef0fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0b0f; --fg: #ededf2; --muted: #a0a0ad; --card: #131318; --border: #26262e;
+      --primary: #8b85f0; --primary-fg: #0b0b0f; --code-bg: #16161c; --accent-soft: #1a1a2b;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+  header { padding: 72px 0 32px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--primary); background: var(--accent-soft); border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; }
+  h1 { font-size: 40px; line-height: 1.1; margin: 18px 0 10px; letter-spacing: -0.02em; }
+  .lede { font-size: 19px; color: var(--muted); max-width: 46em; margin: 0 0 14px; }
+  .meta { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; color: var(--muted); }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 0; }
+  .btn { display: inline-block; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 8px; padding: 10px 18px; border: 1px solid var(--border); }
+  .btn.primary { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
+  .btn.ghost { background: transparent; color: var(--fg); }
+  .shots { display: grid; gap: 16px; margin: 40px 0; }
+  @media (min-width: 720px) { .shots { grid-template-columns: 1fr 1fr; } }
+  .shots figure { margin: 0; }
+  .shots img { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 10px; display: block; }
+  .shots figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; text-align: center; }
+  section { padding: 24px 0; border-top: 1px solid var(--border); }
+  h2 { font-size: 24px; letter-spacing: -0.01em; margin: 8px 0 16px; }
+  h3 { font-size: 16px; margin: 20px 0 6px; }
+  ol, ul { padding-left: 22px; } li { margin: 6px 0; }
+  .cards { display: grid; gap: 12px; grid-template-columns: 1fr; margin: 12px 0; }
+  @media (min-width: 640px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .card h3 { margin: 0 0 4px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-size: 13px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+  td code { font-size: 12.5px; }
+  footer { padding: 40px 0 72px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="badge">Enterprise · Play 3 · Procurement</span>
+    <h1>Vendor Onboarding Review</h1>
+    <p class="lede">A governed procurement backend that risk-tiers each vendor from one versioned rule set, derives the approvals that tier needs, and blocks completion at the API layer until every required approval is granted by the right role.</p>
+    <p class="meta">5 tables · 13 endpoints · 6 screens · auth: @xano-sdk/auth</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="https://github.com/xano-scratch/vendor-onboarding-review">View on GitHub</a>
+      <a class="btn ghost" href="#use">Use this template</a>
+    </div>
+  </header>
+
+  <div class="shots">
+    <figure><img src="screenshot-light.png" alt="The Review board in light mode" /><figcaption>The governed Review board</figcaption></figure>
+    <figure><img src="screenshot-dark.png" alt="The Review board in dark mode" /><figcaption>Dark mode, same board</figcaption></figure>
+  </div>
+
+  <section>
+    <h2>What it proves</h2>
+    <p>This is the governed backend under a plausible AI-built vendor-onboarding tool, made safe to run in production. The business logic lives in one readable API layer. A reviewer can open the completion endpoint and see exactly why a high-risk vendor needed an admin sign-off, and why an incomplete case was refused.</p>
+    <div class="cards">
+      <div class="card"><h3>One rule set</h3><p>A versioned scoring table decides a vendor's risk tier. The rule lives in exactly one place, called by both submit and rescore.</p></div>
+      <div class="card"><h3>Derived approvals</h3><p>The tier derives the approvals the case needs. High risk adds an admin step the lower tiers never see.</p></div>
+      <div class="card"><h3>An API-layer gate</h3><p>Completion is refused, with an audit line, until every required approval is granted. The gate holds even through an agent's request.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>A minute with it</h2>
+    <ol>
+      <li>Open the link and continue as <strong>Morgan (admin)</strong>.</li>
+      <li>Open the <strong>Review board</strong>: cases by stage, a high-risk case flagged, one with an agent draft waiting.</li>
+      <li>Open the high-risk case. It needed three approvals (two approvers and one admin). Press <strong>Complete</strong>: the API-layer block appears, because a step is still pending, and a block line is written to the trail.</li>
+      <li>Open a second window as <strong>Avery (approver)</strong> and approve the pending step. Watch it arrive live in Morgan's board, with no reload.</li>
+      <li>As Morgan, approve the admin step, then <strong>Complete</strong>. The case moves to Approved, and the trail shows the whole sequence.</li>
+      <li>Switch to <strong>Riley (requester)</strong>: only your own submissions, with no Approve or Complete. The role difference is enforced by the API.</li>
+    </ol>
+  </section>
+
+  <section id="use">
+    <h2>Use this template</h2>
+    <p>Clone it, then run it on your machine with no account, or on a cloud link for ChatGPT and Claude.</p>
+    <pre><code>git clone https://github.com/xano-scratch/vendor-onboarding-review
+cd vendor-onboarding-review
+npm install
+npm run xano:deploy    # deploys and seeds on the Xano Engine on your machine
+npm run dev            # opens the app, then click "Continue as Morgan"</code></pre>
+    <p>For a cloud link that works with ChatGPT and Claude connectors:</p>
+    <pre><code>npx xanosdk login
+npm run xano:deploy:ephemeral</code></pre>
+    <h3>Hand it to an agent</h3>
+    <p>Paste this to a coding agent to explore the governed layer:</p>
+    <pre><code>Clone https://github.com/xano-scratch/vendor-onboarding-review and read it.
+It is a Xano backend (TypeScript, @xano/sdk) with a React frontend. The business
+rules are in xano/rbac.ts, xano/function/score_vendor.ts, and
+xano/query/onboarding/writes.ts. Explain how a vendor's risk tier derives its
+required approvals, and how the complete endpoint gates an incomplete case.</code></pre>
+  </section>
+
+  <section>
+    <h2>Roles</h2>
+    <table>
+      <thead><tr><th>Role</th><th>Can</th><th>Cannot</th></tr></thead>
+      <tbody>
+        <tr><td><code>requester</code></td><td>File vendors, track their own cases</td><td>See the full queue, approve, complete, manage rules</td></tr>
+        <tr><td><code>approver</code></td><td>Work the queue, clear the steps that match their role, read any case</td><td>Act on an admin step, complete a case, manage rules</td></tr>
+        <tr><td><code>admin</code></td><td>Everything: admin steps, complete, rescore, publish rules, manage the team</td><td></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>API surface</h2>
+    <p>Every domain endpoint is under <code>api:onboarding/*</code> and needs a signed-in token. Access is checked per endpoint by role, not by row-level security.</p>
+    <table>
+      <thead><tr><th>Verb</th><th>Path</th><th>Who</th><th>Enforces</th></tr></thead>
+      <tbody>
+        <tr><td>GET</td><td><code>/queue</code></td><td>approver, admin</td><td>The queue with each case's outstanding count</td></tr>
+        <tr><td>GET</td><td><code>/submissions/mine</code></td><td>signed in</td><td>The caller's own cases only</td></tr>
+        <tr><td>GET</td><td><code>/submissions/{id}</code></td><td>owner or reviewer</td><td>One case; 404 if not yours and you can't read all</td></tr>
+        <tr><td>POST</td><td><code>/submissions</code></td><td>requester+</td><td>Scores the vendor, derives the tier's approvals</td></tr>
+        <tr><td>POST</td><td><code>/submissions/{id}/approvals/{approval_id}/approve</code></td><td>role matches the step</td><td>Advances the case, writes an approve event</td></tr>
+        <tr><td>POST</td><td><code>/submissions/{id}/complete</code></td><td>admin</td><td>The gate: refuses until every approval is granted</td></tr>
+        <tr><td>POST</td><td><code>/rules/activate</code></td><td>admin</td><td>Publishes a new rule version, retires the prior one</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Works with your agent</h2>
+    <p>A permissioned MCP server exposes the app's jobs, so an agent works the queue under the same rules a person does. Each agent gets its own scoped, expiring, revocable key, and every call is logged.</p>
+    <ul>
+      <li><code>list_review_queue</code>, <code>get_case</code>, <code>score_preview</code> (read)</li>
+      <li><code>submit_vendor</code> (the person's own routine intake)</li>
+      <li><code>approve_step</code>, <code>complete_case</code> (drafted for a person to approve in the app)</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>An open template in the <a href="https://github.com/xano-scratch" style="color:var(--primary)">xano-scratch</a> family. Built on Xano. MIT licensed.</p>
+  </footer>
+</div>
+</body>
+</html>

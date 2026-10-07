@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "@xano/sdk/lambda-globals"
+    ]
+  },
+  "files": [],
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": []
+}

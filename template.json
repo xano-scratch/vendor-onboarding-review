@@ -1,0 +1,20 @@
+{
+  "name": "Vendor Onboarding Review",
+  "track": "enterprise",
+  "signature": "kanban",
+  "screens": [
+    { "name": "Overview", "path": "/" },
+    { "name": "Review board", "path": "/board" },
+    { "name": "Submit a vendor", "path": "/submit" },
+    { "name": "Case", "path": "/cases/:id" },
+    { "name": "My submissions", "path": "/mine" },
+    { "name": "Risk rules", "path": "/rules" }
+  ],
+  "roles": ["requester", "approver", "admin"],
+  "permissions": ["submissions.create", "submissions.read_all", "approvals.decide", "submissions.complete", "rules.manage", "team.manage"],
+  "agentTools": ["list_review_queue", "get_case", "score_preview", "submit_vendor", "approve_step", "complete_case"],
+  "assistantTools": ["queue_summary", "find_case", "explain_score"],
+  "approvals": ["approve_step", "complete_case"],
+  "live": ["submission"],
+  "notifications": ["approval", "approved", "rejected", "completed"]
+}

@@ -1,0 +1,32 @@
+node_modules/
+dist/
+workspace.json
+.xano/
+.env
+.env.tmp-*
+.env.local
+*.local
+.secrets.json
+.secrets.json.tmp-*
+
+# Ignored, on purpose: the bare `.env` above has no slash, so it matches at ANY
+# depth — including xano/.env, which holds the VALUES of this backend's env vars.
+# Its committed template is xano/.env.example, which lists the names only.
+#
+# `.secrets.json` is the second exception, and the same rule applies to it: it
+# matches at any depth, so it covers xano/.secrets.json, which holds the tokens a
+# pull brought down and a deploy sends back. The SDK writes that file; nobody
+# edits it. The `.tmp-*` lines cover the staging file an atomic write of
+# either leaves behind if the process dies between writing and renaming.
+#
+# Those two files are the sole exceptions inside an otherwise fully committed
+# xano/. Do not "tidy" this by ignoring xano/ wholesale — the source is the
+# review surface.
+#
+# Not ignored, on purpose: xano/xano.lock pins object identity and public URLs
+# across renames and environments. Every build writes it. Commit it — ignoring
+# it means each build mints identities that are thrown away and re-invented.
+
+# Raw QA output (screenshots + reports): never committed.
+qa/
+xano.profile.json

@@ -1,0 +1,71 @@
+/* The kit's tokens and global rules (CRAFT.md §16). Imported once, right after `@import "tailwindcss"`.
+   Status colours follow the theme's lightness and chroma; light-mode text values stay at L <= 0.50 so
+   status text passes 4.5:1 on its own tint (CRAFT.md §15.2). Override any of them in index.css. */
+:root {
+  --success: oklch(0.5 0.12 155);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.5 0.11 65);
+  --warning-foreground: oklch(0.985 0 0);
+  --info: oklch(0.5 0.13 250);
+}
+.dark {
+  --success: oklch(0.74 0.14 155);
+  --success-foreground: oklch(0.2 0.03 155);
+  --warning: oklch(0.8 0.13 75);
+  --warning-foreground: oklch(0.25 0.04 75);
+  --info: oklch(0.75 0.12 250);
+}
+@theme inline {
+  /* Accent-coloured TEXT (today, the active tab, the next step): the accent itself, unless it's too light to
+     read on white (a hue 40–90 accent with a dark foreground) — then set a darker --primary-text in index.css. */
+  --color-primary-text: var(--primary-text, var(--primary));
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+}
+
+/* Phone: every control is at least 40 px tall (CRAFT.md §15.3). */
+@media (max-width: 639px) {
+  [data-slot="button"], [data-variant][data-size], [data-slot="select-trigger"], [data-slot="input"] {
+    min-height: 2.5rem;
+  }
+  /* Icon-only buttons (the menu trigger, the theme toggle) are square: give them the width too. */
+  [data-size^="icon"], [data-slot="sidebar-trigger"] { min-width: 2.5rem; min-height: 2.5rem; }
+}
+
+/* The phone tab bar owns the bottom of the screen: lift floating launchers (@xano-sdk/chatbot's) above it. */
+@media (max-width: 767px) {
+  :root:has([data-kit="bottom-nav"]) { --chat-offset: 3.75rem; }
+}
+
+/* The assistant docked down the side (@xano-sdk/chatbot's ChatWidget): the page makes room beside it. */
+@media (min-width: 640px) {
+  html[data-chat-dock="right"] body { padding-right: var(--chat-dock); }
+  html[data-chat-dock="left"] body { padding-left: var(--chat-dock); }
+}
+
+/* A floating chat launcher never covers the end of a page. */
+:root:has([data-testid="chat-widget-launcher"]) [data-kit="scroll-pane"] > div { padding-bottom: 6rem; }
+
+/* A modal (a sheet, a dialog) turns pointer events off outside itself; its toasts' Undo must stay clickable. */
+[data-sonner-toaster] { pointer-events: auto; }
+
+/* A horizontal strip that scrolls instead of wrapping (status tabs, kanban on a phone). */
+.kit-scroll-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.kit-scroll-x::-webkit-scrollbar { display: none; }
+
+/* Respect reduced motion everywhere (CRAFT.md §15.11). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

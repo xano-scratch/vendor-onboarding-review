@@ -1,0 +1,56 @@
+{
+  "name": "vendor-onboarding-review",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run xano:routes && vite",
+    "build": "npm run xano:routes && tsc --noEmit && tsc -p xano/lambdas && vite build",
+    "preview": "vite preview",
+    "typecheck": "npm run xano:routes && tsc --noEmit && tsc -p xano/lambdas",
+    "xano:routes": "xanosdk routes ./xano/index.ts --emit xano/routes.gen.ts",
+    "xano:export": "npm run xano:routes && tsc --noEmit && tsc -p xano/lambdas && xanosdk export ./xano/index.ts --out workspace.json",
+    "xano:deploy": "npm run xano:routes && tsc --noEmit && tsc -p xano/lambdas && xanosdk deploy --allow-empty-env=MCP_OAUTH_LOGIN_URL ./xano/index.ts --keep-data",
+    "xano:deploy:ephemeral": "npm run build && xanosdk deploy --allow-empty-env=MCP_OAUTH_LOGIN_URL ./xano/index.ts --ephemeral --static ./frontend/dist",
+    "xano:deploy:frontend": "npm run build && xanosdk publish ./frontend/dist",
+    "xano:check": "xanosdk routes ./xano/index.ts --emit xano/routes.gen.ts --strict && tsc --noEmit && tsc -p xano/lambdas && xanosdk export ./xano/index.ts --check --strict",
+    "xano:test": "xanosdk test run-all"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "*",
+    "@xano-sdk/agents": "^0.1.0",
+    "@xano-sdk/chatbot": "^1.1.0",
+    "@xano-sdk/mcp-oauth": "^1.0.1",
+    "@xano-sdk/rbac": "^0.1.0",
+    "@xano/sdk": "1.0.7",
+    "class-variance-authority": "^0.7.1",
+    "cmdk": "^1.1.1",
+    "cn": "^0.4.0",
+    "lucide-react": "^0.475.0",
+    "radix-ui": "^1.6.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.18.4",
+    "sonner": "^2.0.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.5",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^6.0.5",
+    "tailwindcss": "^4.1.5",
+    "tsx": "^4.19.2",
+    "tw-animate-css": "^1.2.4",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "xanosdk": {
+    "@xano/sdk": {
+      "engine": "v0.1.20"
+    }
+  }
+}

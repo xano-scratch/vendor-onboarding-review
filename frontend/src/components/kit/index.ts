@@ -1,0 +1,21 @@
+// The template kit (CRAFT.md §16): owned source, styled by the app's shadcn theme. Edit freely.
+export { AppShell, initialsOf, type MenuItem, type NavGroup, type NavItem } from "./app-shell";
+export { ProfilePage, ProfileSection, type PasswordRule } from "./profile";
+export { setThemeMode, useTheme, type ThemeMode } from "./theme";
+export { CommandPalette, PaletteButton, openCommandPalette, type PaletteItem } from "./command-palette";
+export { DataList, Pager, type Column } from "./data-list";
+export { useLoad, optimistic } from "./data";
+export { addDays, dayKey, fromDayKey, isToday, startOfDay, startOfMonth, startOfWeek, type WeekStart } from "./dates";
+export { FilterSelect, SearchInput, StatusTabs, Toolbar, type TabOption } from "./filter-bar";
+export { FirstRun, type FirstRunStep } from "./first-run";
+export { InlineSelect, InlineText } from "./inline-edit";
+export { KanbanBoard, type KanbanColumn } from "./kanban";
+export { MonthCalendar } from "./calendar";
+export { Field, Fields, RecordSheet } from "./record-sheet";
+export { ScheduleBoard, type Lane } from "./schedule";
+export { isTyping, modKey, useHotkey } from "./shortcuts";
+export { Sparkline, StatCard, perDay } from "./stat-card";
+export { EmptyState, LoadError, PageHeader } from "./states";
+export { StatusBadge, type Tone } from "./status-badge";
+export { Ago, DateLabel, relative } from "./time";
+export { rememberedHref, useOpenParam, useUrlState } from "./url-state";

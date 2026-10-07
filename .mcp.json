@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "xano-local": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "--package",
+        "@xano/sdk",
+        "xanosdk",
+        "local",
+        "mcp",
+        "--stdio"
+      ]
+    }
+  }
+}

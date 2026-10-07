@@ -1,0 +1,4 @@
+# The export writes LF. Normalizing here keeps generated output
+# byte-identical on every checkout, so `npm run xano:check` cannot fail over a
+# contributor's core.autocrlf setting rather than over a real change.
+* text=auto eol=lf

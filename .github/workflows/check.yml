@@ -1,0 +1,40 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19'
+
+      # A frozen install whenever a lockfile is committed: package.json allows a
+      # @xano/sdk range that the lock pins, and an open install would rebuild
+      # derived state with whatever patch shipped most recently, failing the
+      # check below on a change that touched nothing relevant. The fallback
+      # covers a tree scaffolded with `--no-install`, which has no lockfile yet.
+      - name: Install
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      # The gate. Typechecks, then runs
+      # `npx xanosdk export ./xano/index.ts --check --strict`: every check an export runs,
+      # writing nothing, so it needs no secrets. It fails instead of rewriting
+      # when xano.lock disagrees with the source, naming what would change.
+      # It also fails while the lock carries an entry no exported object
+      # matches, which is how a rename looks until its identity is moved across
+      # with `npx xanosdk lock rename` (or dropped with `npx xanosdk lock prune`). An
+      # installed toolchain module's own frozen check rides on this same run.
+      - name: Typecheck, check the export, and fail on stale derived state
+        run: npm run xano:check
+
+      # Backstop: the step above covers the lock and any module's own check.
+      # This catches anything else the check leaves changed in the working tree.
+      - name: Working tree must be clean after the export
+        run: git diff --exit-code

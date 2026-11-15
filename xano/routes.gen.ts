@@ -4,10 +4,10 @@
  * Plain data plus one interpolator, and the request input types of every
  * endpoint, channel and message. The core sections import nothing; the only
  * imports are the packages an installed module's block declares, never the
- * SDK itself. So a frontend gets the typed path/verb (and socket) contract
+ * SDK itself. So a frontend gets the typed path/verb (socket and MCP) contract
  * without pulling the SDK runtime into its bundle. Regenerate after changing an
- * endpoint's name, verb, api group or inputs, or a realtime server's, channel's
- * or message's name or inputs.
+ * endpoint's name, verb, api group or inputs, a realtime server's, channel's
+ * or message's name or inputs, or an MCP server's name.
  */
 
 /**
@@ -219,6 +219,77 @@ export function routePath(name: RouteName, params?: Record<string, string | numb
   return fillParams(`routePath("${String(name)}")`, "route", route.path, params, true);
 }
 
+/**
+ * The GET query string for a route's inputs, without the leading "?" —
+ * `routePath(name, params) + "?" + routeQuery(name, input)`. The same encoding
+ * as the SDK's `query.toSearchParams`, inlined so a frontend needs no SDK
+ * import: a list of scalars sends `k[]=a&k[]=b`, an object `k[sub]=v`, a list
+ * of objects `k[0][sub]=v`, a list holding a list one JSON value; `null`,
+ * `undefined` and an empty list or object are left out. The route's `{param}`
+ * inputs are dropped — they ride in the path. Throws on a value with no
+ * query-string form (a non-finite number, a non-plain object, a cycle).
+ */
+export function routeQuery<N extends RouteName>(
+  name: N,
+  input: N extends keyof RouteInputs ? RouteInputs[N] : Record<string, unknown>,
+): string {
+  const route = own(ROUTES as Record<string, { verb: string; path: string }>, name as string);
+  if (route === undefined) throw new Error(`routeQuery: unknown route "${String(name)}".`);
+  if (input === null || typeof input !== "object" || Array.isArray(input)) {
+    throw new TypeError(`routeQuery("${String(name)}") takes the inputs as a { name: value } record.`);
+  }
+  const pathParams = new Set((route.path.match(/\{[^}]+\}/g) ?? []).map((p) => p.slice(1, -1)));
+  const pairs: string[] = [];
+  // The containers on the path to the value being encoded: a value holding one is a cycle.
+  const ancestors: unknown[] = [];
+  // application/x-www-form-urlencoded, byte for byte what URLSearchParams writes.
+  const form = (s: string): string =>
+    encodeURIComponent(s).replace(/%20/g, "+").replace(/[!'()~]/g, (ch) => `%${ch.charCodeAt(0).toString(16).toUpperCase()}`);
+  const fail = (path: string, why: string): never => {
+    throw new TypeError(`routeQuery: param "${path}" ${why}`);
+  };
+  const isScalar = (v: unknown): v is string | number | boolean =>
+    typeof v === "string" || typeof v === "number" || typeof v === "boolean";
+  const encode = (path: string, value: unknown, out: string[]): boolean => {
+    if (value === null || value === undefined) return false;
+    if (isScalar(value)) {
+      if (typeof value === "number" && !Number.isFinite(value)) fail(path, `is ${value} — not a finite value`);
+      out.push(`${form(path)}=${form(String(value))}`);
+      return true;
+    }
+    const proto: unknown = typeof value === "object" ? Object.getPrototypeOf(value) : 0;
+    if (path !== "" && !Array.isArray(value) && proto !== Object.prototype && proto !== null) {
+      fail(path, "is not a scalar, list or plain object");
+    }
+    if (ancestors.includes(value)) fail(path, "contains itself — a cycle has no query-string encoding");
+    ancestors.push(value);
+    let sent = false;
+    if (Array.isArray(value) && value.some(Array.isArray)) {
+      value.forEach((item: unknown, index) => encode(`${path}[${index}]`, item, []));
+      out.push(`${form(path)}=${form(JSON.stringify(value))}`);
+      sent = true;
+    } else if (Array.isArray(value)) {
+      const plain = value.every(isScalar);
+      value.forEach((item: unknown, index) => {
+        if (!encode(`${path}[${plain ? "" : index}]`, item, out)) {
+          fail(`${path}[${index}]`, `is ${item === null || item === undefined ? String(item) : "empty"}: a list item that sends nothing would move every later one up. Remove it, or give it a value`);
+        }
+        sent = true;
+      });
+    } else {
+      for (const [key, member] of Object.entries(value as Record<string, unknown>)) {
+        if (path === "" && pathParams.has(key)) continue;
+        if (key === "" || /[[\]]/.test(key)) fail(path !== "" ? `${path}[${key}]` : key, "is empty or holds `[`/`]` — a query string cannot carry that name");
+        if (encode(path !== "" ? `${path}[${key}]` : key, member, out)) sent = true;
+      }
+    }
+    ancestors.pop();
+    return sent;
+  };
+  encode("", input, pairs);
+  return pairs.join("&");
+}
+
 /** Every realtime server in this workspace, by name, with its resolved canonical. */
 export const REALTIME_SERVERS = {
   "live": { canonical: "live" },
@@ -322,6 +393,90 @@ export function socketUrl(
     tenant = assertTenant(fromBase);
   }
   return `${origin}${socketPath(server, { tenant })}`;
+}
+
+/** Every MCP server in this workspace, by name, with its resolved canonical. */
+export const MCP_SERVERS = {
+  "vendor-onboarding-review-mcp": { canonical: "vendor-onboarding-review-mcp" },
+  "vendor-onboarding-review-mcp-signin": { canonical: "vendor-onboarding-review-mcp-signin" },
+} as const;
+
+/** Every MCP server name in this workspace. */
+export type McpServerName = keyof typeof MCP_SERVERS;
+
+/** Reject a tenant name that would smuggle extra path segments into the MCP path. */
+function assertMcpTenant(tenant: string): string {
+  if (!/^[A-Za-z0-9-]+$/.test(tenant)) {
+    throw new Error(
+      `mcpUrl: invalid \`tenant\` ${JSON.stringify(tenant)} — a tenant name is alphanumeric with dashes ` +
+        `(e.g. "xxxx-xxxx-xxxx"). It rides as its own "/tenant/<name>" path pair, so "/" cannot appear in it.`,
+    );
+  }
+  return tenant;
+}
+
+/**
+ * The Streamable-HTTP endpoint PATH — `/x2/mcp/<canonical>/<token>/stream`, or
+ * `/x2/mcp/tenant/<tenant>/<canonical>/<token>/stream`. `token` defaults to
+ * "mcp": no URL token, so the client authenticates with an `Authorization` header.
+ */
+export function mcpPath(
+  server: McpServerName,
+  opts?: { tenant?: string | undefined; token?: string | undefined },
+): string {
+  const entry = own(MCP_SERVERS as Record<string, { canonical: string }>, server);
+  if (!entry) throw new Error(`mcpPath: unknown MCP server "${String(server)}".`);
+  const tenant = opts?.tenant ? `tenant/${assertMcpTenant(opts.tenant)}/` : "";
+  return `/x2/mcp/${tenant}${entry.canonical}/${opts?.token || "mcp"}/stream`;
+}
+
+/**
+ * The absolute endpoint URL — `baseUrl` + {@link mcpPath}. A `/tenant/<name>`
+ * on the base URL is lifted to after `/x2/mcp`, where the endpoint registers it,
+ * so `mcpUrl(name, window.XANO_HOST)` is right as-is.
+ *
+ * Give it to an MCP client or show it to a user. The endpoint is CORS-open on
+ * both backends — it serves every browser `Origin` — so do not treat the URL as
+ * a browser boundary; gate each tool with `auth`/`oauth`.
+ */
+export function mcpUrl(
+  server: McpServerName,
+  baseUrl: string,
+  opts?: { tenant?: string | undefined; token?: string | undefined },
+): string {
+  if (!own(MCP_SERVERS as Record<string, unknown>, server)) {
+    throw new Error(`mcpUrl: unknown MCP server "${String(server)}".`);
+  }
+  const base = (baseUrl ?? "").trim().replace(/\/+$/, "");
+  if (!base) throw new Error('mcpUrl: needs a base URL (e.g. "https://x.dev.xano.io").');
+  // A base URL ending in an MCP endpoint path is this function's own output fed
+  // back in. The token segment can be a credential, so it is redacted.
+  const resolved = /(\/x2\/mcp\/(?:tenant\/[^/]+\/)?[^/]+\/)[^/]+(\/stream)$/i;
+  if (resolved.test(base)) {
+    throw new Error(
+      `mcpUrl: \`baseUrl\` already carries an MCP endpoint path (${base.replace(resolved, "$1<token>$2")}). ` +
+        "Pass the INSTANCE base URL, not the result of a previous mcpUrl()/getUrl() — resolving twice " +
+        'appends a second "/x2/mcp/<canonical>/<token>/stream".',
+    );
+  }
+  // A tenant base URL names its tenant in a slot the MCP endpoint does not
+  // register; translate rather than concatenate, which 404s.
+  const lifted = /^((?:https?:\/\/)?[^/]+)\/tenant\/([^/]+)(\/.*)?$/i.exec(base);
+  let origin = base;
+  let tenant = opts?.tenant;
+  if (lifted) {
+    const fromBase = lifted[2]!;
+    if (tenant !== undefined && tenant !== fromBase) {
+      throw new Error(
+        `mcpUrl: given tenant ${JSON.stringify(tenant)} but the base URL names ` +
+          `${JSON.stringify(fromBase)} (".../tenant/${fromBase}"). Refusing to guess which one you ` +
+          'meant — pass the matching tenant, or a base URL without the "/tenant/<name>" prefix.',
+      );
+    }
+    origin = `${lifted[1]!}${lifted[3] ?? ""}`;
+    tenant = assertMcpTenant(fromBase);
+  }
+  return `${origin}${mcpPath(server, { tenant, token: opts?.token })}`;
 }
 
 /**

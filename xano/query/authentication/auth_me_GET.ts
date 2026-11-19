@@ -1,4 +1,4 @@
-import { auth, c, query, ref, s } from "@xano/sdk";
+import { auth, c, guard, query, ref, s } from "@xano/sdk";
 import { Getting_Started_Template_create_event_log } from "../../_shared.js";
 import { user } from "../../table/user.js";
 import { Authentication } from "../authentication.js";
@@ -29,6 +29,7 @@ export const auth_me = query({
       ],
       as: "user",
     }),
+    guard.found("user"),
     s.function.run({
       fn: Getting_Started_Template_create_event_log,
       as: "event_log",

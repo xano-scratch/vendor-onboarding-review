@@ -1,11 +1,14 @@
 // The base app's Xano tests, shipped in every template and run by `deploy --test` (STANDARDS.md "Every module
 // proves itself"). Each makes its own people: a test run starts with an empty database.
-import { c, ref, s, workflowTest } from "@xano/sdk";
+import { c, ref, s, workflowTest as sdkWorkflowTest } from "@xano/sdk";
 import { ROLES, SIGNUP_ROLE } from "../app.js";
 import { user } from "../table/user.js";
 import { access_link, notification } from "./tables.js";
 import { notifyFn } from "./functions.js";
 import { acceptLink, checkLink } from "../query/authentication/links.js";
+
+// A test reads rows it just made, and a missing row should fail that test: the null-safety warning doesn't apply.
+const workflowTest: typeof sdkWorkflowTest = (def) => sdkWorkflowTest({ ...def, diagnostics: { allow: ["stack.drill-maybe-null"] } });
 
 const FAR = Date.UTC(2099, 0, 1);
 // The tokens and their SHA-256 (hex, what fl.sha256 gives), so a test can hold the token the app never stores.
